@@ -1,1 +1,9 @@
 .env
+
+# frontend
+dist
+node_modules
+
+# docs
+QUOTA.md
+RESOURCES.md
