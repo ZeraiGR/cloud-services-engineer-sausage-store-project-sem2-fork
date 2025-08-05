@@ -1,0 +1,11 @@
+# Исключаем зависимости и результаты сборки
+node_modules
+dist
+npm-debug.log
+
+# Исключаем файлы IDE и ОС
+.idea
+.vscode
+*.suo
+*.user
+.DS_Store
