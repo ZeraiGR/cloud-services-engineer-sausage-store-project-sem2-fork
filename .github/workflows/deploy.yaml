@@ -107,7 +107,7 @@ jobs:
           run: |
             CHART_VERSION="0.1.0-$(git rev-parse --short HEAD)"
             
-            helm upgrade --install sausage-store nexus/sausage-store-chart \
+            helm upgrade --install sausage-store nexus/sausage-store \
               --version $CHART_VERSION \
               --namespace $SAUSAGE_STORE_NAMESPACE \
               -f ./sausage-store-chart/values.yaml \
