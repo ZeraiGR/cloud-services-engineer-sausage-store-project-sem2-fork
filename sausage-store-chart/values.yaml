@@ -5,6 +5,13 @@ global:
   ###  name: vault
   ###  vaultToken: someToken
 
+  mongodb:
+    containerPort: 27017
+    reports_user:
+      username: "reports_user"
+      password: "reports_password"
+      database: "reports_db"
+
 
 frontend:
   replicas: 1
@@ -123,8 +130,3 @@ infra:
     env:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: rootpassword
-    containerPort: 27017
-    reports_user:
-      username: "reports_user"
-      password: "reports_password"
-      database: "reports_db"

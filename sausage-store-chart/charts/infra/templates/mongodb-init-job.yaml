@@ -38,10 +38,10 @@ spec:
                 key: MONGO_INITDB_ROOT_PASSWORD
 
           - name: REPORTS_DB
-            value: {{ .Values.mongodb.reports_user.database | quote }}
+            value: {{ .Values.global.mongodb.reports_user.database | quote }}
           - name: REPORTS_USER
-            value: {{ .Values.mongodb.reports_user.username | quote }}
+            value: {{ .Values.global.mongodb.reports_user.username | quote }}
           - name: REPORTS_PASSWORD
-            value: {{ .Values.mongodb.reports_user.password | quote }}
+            value: {{ .Values.global.mongodb.reports_user.password | quote }}
       restartPolicy: OnFailure
   backoffLimit: 4
