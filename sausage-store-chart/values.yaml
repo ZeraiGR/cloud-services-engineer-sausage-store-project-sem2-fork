@@ -70,7 +70,15 @@ backend-report:
 
 infra:
   postgresql:
-  ### Опишите необходимые переменные для развертывания PostgresQL в кластере Kubernetes
+    image:
+      repository: postgres
+      tag: 14.18-alpine
+    persistence:
+      size: 1Gi
+    auth:
+      database: sausagestore
+      username: root
+      password: rootpassword
   mongodb:
     env:
       MONGO_INITDB_ROOT_USERNAME: root
