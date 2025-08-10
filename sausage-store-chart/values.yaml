@@ -35,7 +35,7 @@ backend:
     port: "8080"
     scrape: "true"
   env:
-    postgresUri: jdbc:postgresql://postgresql:5432/sausage-store
+    postgresUri: jdbc:postgresql://postgresql-service:5432/sausage-store
     postgresUser: store
     postgresPassword: storepassword
     reportPath: /logs/reports
@@ -45,7 +45,10 @@ backend:
   revisionHistoryLimit: 15
   replicas: 1
   strategy:
-  ### Опишите стратегию RollingUpdate для бэкенда
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: "25%"
+      maxUnavailable: "25%"
   image: zeraigr/sausage-backend:latest
   imagePullPolicy: Always
   resources:
@@ -57,9 +60,25 @@ backend:
       cpu: "1"
   containerPort: 8080
   livenessProbe:
-  ### Опишите LivenessProbe для бэкенда
+    httpGet:
+      path: /actuator/health
+      port: 8080
+    initialDelaySeconds: 45
+    periodSeconds: 15
+    timeoutSeconds: 5
+    failureThreshold: 3
   vpa:
-  ### Опишите VPA для бэкенда
+    updatePolicy:
+      updateMode: "Off"
+    resourcePolicy:
+      containerPolicies:
+        - containerName: '*'
+          minAllowed:
+            cpu: "100m"
+            memory: "256Mi"
+          maxAllowed:
+            cpu: "1"
+            memory: "1024Mi"
 
 backend-report:
   replicas: 1
@@ -97,11 +116,15 @@ infra:
     persistence:
       size: 1Gi
     auth:
-      database: sausagestore
-      username: root
-      password: rootpassword
+      database: sausage-store
+      username: store
+      password: storepassword
   mongodb:
     env:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: rootpassword
     containerPort: 27017
+    reports_user:
+      username: "reports_user"
+      password: "reports_password"
+      database: "reports_db"
