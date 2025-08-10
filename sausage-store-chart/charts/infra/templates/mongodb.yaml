@@ -44,16 +44,14 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: mongodb
-  labels:
-    app: mongodb
+  name: mongodb-service
 spec:
+  type: ClusterIP
   ports:
   - port: {{ .Values.global.mongodb.containerPort }}
     targetPort: {{ .Values.global.mongodb.containerPort }}
   selector:
     app: mongodb
-  clusterIP: None
 ---
 apiVersion: v1
 kind: ConfigMap
