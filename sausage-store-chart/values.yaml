@@ -61,10 +61,6 @@ backend:
   vpa:
   ### Опишите VPA для бэкенда
 
-### Приложение должно использовать стратегию Recreate
-### Приложение использует переменную PORT - порт, на котором оно запустится и DB - Uri-подключение к mongodb. 
-### DB положите в Secret, PORT в ConfigMap
-### Опишите HPA для backend-report
 backend-report:
   replicas: 1
   image:
