@@ -76,7 +76,7 @@ jobs:
         run: |
           CHART_VERSION="0.1.0-$(git rev-parse --short HEAD)"
           helm package ./sausage-store-chart --version $CHART_VERSION --app-version $CHART_VERSION
-          helm cm-push sausage-store-chart-$CHART_VERSION.tgz $NEXUS_HELM_REPO
+          helm cm-push sausage-store-$CHART_VERSION.tgz $NEXUS_HELM_REPO
 
   deploy_helm_chart_to_kubernetes:
       name: Deploy Helm Chart To Kubernetes
