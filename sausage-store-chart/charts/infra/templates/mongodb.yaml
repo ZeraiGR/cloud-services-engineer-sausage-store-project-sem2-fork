@@ -67,7 +67,7 @@ metadata:
   annotations:
     "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-weight": "5"
-    "helm.sh/hook-delete-policy": hook-succeeded
+    # "helm.sh/hook-delete-policy": hook-succeeded
 spec:
   template:
     spec:
@@ -100,10 +100,5 @@ spec:
           });
           print("User '{{ .Values.global.mongodb.reports_data.username }}' created successfully.");
           EOF
-      resources:
-        requests:
-          memory: "128Mi"
-          cpu: "50m"
-        limits:
-          memory: "256Mi"
-          cpu: "250m"
+        resources:
+          {{- toYaml .Values.mongodb.resources | nindent 10 }}
