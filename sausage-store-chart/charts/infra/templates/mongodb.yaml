@@ -1,31 +1,26 @@
 ---
 apiVersion: v1
-kind: Secret
-metadata:
-  name: mongodb-secret
-type: Opaque
-stringData:
-  MONGO_INITDB_ROOT_USERNAME: {{ .Values.mongodb.env.MONGO_INITDB_ROOT_USERNAME }}
-  MONGO_INITDB_ROOT_PASSWORD: {{ .Values.mongodb.env.MONGO_INITDB_ROOT_PASSWORD }}
----
-apiVersion: v1
 kind: Service
 metadata:
-  name: mongodb-service
+  name: mongodb
+  labels:
+    app: mongodb
 spec:
-  type: ClusterIP
   ports:
   - port: {{ .Values.global.mongodb.containerPort }}
     targetPort: {{ .Values.global.mongodb.containerPort }}
   selector:
     app: mongodb
+  clusterIP: None
 ---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: mongodb
+  annotations:
+    helm.sh/hook-weight: "-5"
 spec:
-  serviceName: mongodb-service
+  serviceName: mongodb
   replicas: 1
   selector:
     matchLabels:
@@ -37,22 +32,17 @@ spec:
     spec:
       containers:
       - name: mongodb
-        image: mongo:7.0
+        image: {{ .Values.mongodb.image }}
         ports:
         - containerPort: {{ .Values.global.mongodb.containerPort }}
         envFrom:
-          - secretRef:
-              name: mongodb-secret
+          - configMapRef:
+              name: mongodb-conf
         volumeMounts:
         - name: mongodb-data
           mountPath: /data/db
-          subPath: mongo
         resources:
-          requests:
-            memory: "128Mi"
-            cpu: "50m"
-          limits:
-            memory: "256Mi"
+          {{- toYaml .Values.mongodb.resources | nindent 10 }}
   volumeClaimTemplates:
   - metadata:
       name: mongodb-data
@@ -60,4 +50,53 @@ spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:
         requests:
-          storage: 1Gi
+          storage: {{ .Values.mongodb.storage }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mongodb-conf
+data:
+  MONGO_INITDB_ROOT_USERNAME: {{ .Values.mongodb.env.MONGO_INITDB_ROOT_USERNAME }}
+  MONGO_INITDB_ROOT_PASSWORD: {{ .Values.mongodb.env.MONGO_INITDB_ROOT_PASSWORD }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-mongodb-init-job
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "5"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: mongodb-init
+        image: {{ .Values.mongodb.image }}
+        command:
+        - /bin/bash
+        - -c
+        - |
+          until mongosh --host mongodb \
+            --username {{ .Values.mongodb.env.MONGO_INITDB_ROOT_USERNAME }} \
+            --password {{ .Values.mongodb.env.MONGO_INITDB_ROOT_PASSWORD }} \
+            --authenticationDatabase admin \
+            --eval "print('MongoDB is ready')" > /dev/null 2>&1; do
+            echo "Waiting for MongoDB to be ready..."
+            sleep 5
+          done
+          
+          mongosh --host mongodb \
+            --username {{ .Values.mongodb.env.MONGO_INITDB_ROOT_USERNAME }} \
+            --password {{ .Values.mongodb.env.MONGO_INITDB_ROOT_PASSWORD }} \
+            --authenticationDatabase admin <<EOF
+          use {{ .Values.global.mongodb.reports_data.database }};
+          db.createUser({
+            user: "{{ .Values.global.mongodb.reports_data.username }}",
+            pwd: "{{ .Values.global.mongodb.reports_data.password }}",
+            roles: [ { role: "readWrite", db: "{{ .Values.global.mongodb.reports_data.database }}" } ]
+          });
+          print("User '{{ .Values.global.mongodb.reports_data.username }}' created successfully.");
+          EOF
