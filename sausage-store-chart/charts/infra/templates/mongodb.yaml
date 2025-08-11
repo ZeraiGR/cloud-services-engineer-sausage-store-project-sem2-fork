@@ -49,8 +49,8 @@ metadata:
     app: mongodb
 spec:
   ports:
-  - port: {{ .Values.mongodb.containerPort }}
-    targetPort: {{ .Values.mongodb.containerPort }}
+  - port: {{ .Values.global.mongodb.containerPort }}
+    targetPort: {{ .Values.global.mongodb.containerPort }}
   selector:
     app: mongodb
   clusterIP: None
