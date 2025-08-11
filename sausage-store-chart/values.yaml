@@ -10,7 +10,7 @@ global:
     reports_data:
       username: "reports_user"
       password: "reports_password"
-      database: "reports_db"
+      database: "sausage-store"
 
 
 frontend:
